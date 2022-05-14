@@ -25,7 +25,6 @@ class ClashCache {
         id = repo?.count() ?: 0L
         var idOfExisting: Long = id
         cache.forEach { (k, v) ->
-
             if (v.first.speedOfFirst == result.speedOfFirst &&
                 v.first.speedOfSecond == result.speedOfSecond &&
                 v.first.weightOfFirst == result.weightOfFirst &&
@@ -48,7 +47,6 @@ class ClashCache {
             cache[id] = Pair(result, result.calculateSpeedAfterClash())
             id++
         }
-        println(repo?.findAll().toString())
         return idOfExisting
     }
 
