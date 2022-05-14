@@ -4,20 +4,20 @@ import org.springframework.stereotype.Component
 
 @Component
 class ClashCounter {
-    private var allNum: Long = 0L
-    private var num: Long = 0L
+    private var allRequests: Long = 0L
+    private var nowRequests: Long = 0L
 
     @Synchronized
     fun increment(): Long {
-        allNum++
-        return num++
+        allRequests++
+        return ++nowRequests
     }
 
     @Synchronized
     fun decrement(): Long {
-        return --num
+        return --nowRequests
     }
 
-    fun getStat(): Long = allNum
-    fun getCurrent(): Long = num
+    fun getStat(): Long = allRequests
+    fun getCurrent(): Long = nowRequests
 }

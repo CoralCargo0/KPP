@@ -1,4 +1,4 @@
-package com.example.KPP
+package com.example.KPP.models
 
 import kotlin.math.abs
 import kotlin.math.pow
@@ -28,7 +28,7 @@ fun InelasticClashOfTwo.getSpeed2(): Double {
     return speedOfSecond
 }
 
-fun InelasticClashOfTwo.calculateSpeedAfterClash(): String {
+fun InelasticClashOfTwo.calculateSpeedAfterClash(): Double {
     this.apply {
         val speedAfterClash: Double = if (this.isHeadOnClash()) {
             sqrt(
@@ -43,7 +43,7 @@ fun InelasticClashOfTwo.calculateSpeedAfterClash(): String {
                 ) / (weightOfFirst + weightOfSecond)
             )
         }
-        return if (speedAfterClash.isNaN()) "0" else String.format("%.3f", speedAfterClash)
+        return if (speedAfterClash.isNaN()) 0.0 else speedAfterClash
     }
 }
 

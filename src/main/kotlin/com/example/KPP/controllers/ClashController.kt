@@ -1,23 +1,29 @@
 package com.example.KPP.controllers
 
-import com.example.KPP.InelasticClashOfTwo
-import com.example.KPP.InelasticClashService
-import com.example.KPP.ResultDto
+import com.example.KPP.*
 import com.example.KPP.common.Constants
 import com.example.KPP.counter.ClashCounter
+import com.example.KPP.dto.BulkDto
+import com.example.KPP.dto.InelasticClashOfTwoPostDto
+import com.example.KPP.dto.ResultDto
+import com.example.KPP.dto.config
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
 
 @RestController
-class ClashController(
-    val service: InelasticClashService,
-    val clashCounter: ClashCounter
-) {
+class ClashController {
+    @Autowired
+    val service: InelasticClashService? = null
+
+    @Autowired
+    val clashCounter: ClashCounter? = null
     private val logger: Logger = LogManager.getLogger(ClashController::class.java)
+
 
     @GetMapping("/calculate")
     fun calculate(
@@ -26,50 +32,42 @@ class ClashController(
         @RequestParam(value = Constants.WEIGHT_OF_SECOND, defaultValue = "0.0") weightOfSecond: String,
         @RequestParam(value = Constants.SPEED_OF_SECOND, defaultValue = "0.0") speedOfSecond: String
     ): ResultDto {
-        val result: ResultDto
-        clashCounter.increment()
+        clashCounter?.increment()
         logger.info(
             "GET /calculate request params:${Constants.WEIGHT_OF_FIRST} - $weightOfFirst, " +
                     "${Constants.SPEED_OF_FIRST} - $speedOfFirst, " +
                     "${Constants.WEIGHT_OF_SECOND} - $weightOfSecond, " +
                     "${Constants.SPEED_OF_SECOND} - $speedOfSecond"
         )
-        service.addClash(
+        val result: ResultDto = service?.addClash(
             weightOfFirst,
             speedOfFirst,
             weightOfSecond,
             speedOfSecond
+        ) ?: throw ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR
         )
-        try {
-            result = service.getLastClashResult()
-        } catch (e: RuntimeException) {
-            logger.info("GET /calculate Error:$e")
-            throw ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR, e.message, e
-            )
-        }
-        clashCounter.decrement()
+
+        logger.info(
+            "GET /calculate - amount of handled requests - ${clashCounter?.getStat()}, now handling - ${clashCounter?.getCurrent()}"
+        )
+        clashCounter?.decrement()
         return result
     }
 
 
     @PostMapping("/bulk/calculate")
-    fun bulkCalculate(@RequestBody clashes: List<InelasticClashOfTwo>): ResultDto {
-        val result: ResultDto
-        clashCounter.increment()
+    fun bulkCalculate(@RequestBody clashes: List<InelasticClashOfTwoPostDto>): BulkDto {
         logger.info("POST /bulk/calculate params: $clashes")
-        service.addClash(
-            clashes[0]
-        )
+        val tmp = BulkDto()
         try {
-            result = service.getLastClashResult()
+            tmp.config(clashes)
         } catch (e: RuntimeException) {
-            logger.info("POST /bulk/calculate Error:$e")
+            logger.error("POST /bulk/calculate Error:$e")
             throw ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR, e.message, e
             )
         }
-        clashCounter.decrement()
-        return result
+        return tmp
     }
 }
