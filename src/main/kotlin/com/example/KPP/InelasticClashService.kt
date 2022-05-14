@@ -2,7 +2,6 @@ package com.example.KPP
 
 import com.example.KPP.cache.ClashCache
 import com.example.KPP.dto.ResultDto
-import com.example.KPP.models.ClashJPARepository
 import com.example.KPP.models.InelasticClashOfTwo
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -17,7 +16,6 @@ class InelasticClashService {
 
     @Autowired
     val cache: ClashCache? = null
-
 
     private val logger: Logger = LogManager.getLogger(InelasticClashService::class.java)
 
@@ -46,7 +44,7 @@ class InelasticClashService {
         speedOfSecond: String
     ): ResultDto {
 
-        var id: Long
+        val id: Long
         try {
             val clash = InelasticClashOfTwo(
                 weightOfFirst = weightOfFirst.toDouble(),
@@ -54,7 +52,6 @@ class InelasticClashService {
                 weightOfSecond = weightOfSecond.toDouble(),
                 speedOfSecond = speedOfSecond.toDouble()
             )
-            //id = clashCounter?.getStat() ?: 0
             id = cache?.addClash(clash) ?: throw ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR, "No cache class"
             )
@@ -65,21 +62,6 @@ class InelasticClashService {
                 HttpStatus.UNPROCESSABLE_ENTITY, "Bad input", e
             )
         }
-//        try {
-//            val clash = InelasticClashOfTwo(
-//                weightOfFirst = weightOfFirst.toDouble(),
-//                speedOfFirst = speedOfFirst.toDouble(),
-//                weightOfSecond = weightOfSecond.toDouble(),
-//                speedOfSecond = speedOfSecond.toDouble()
-//            )
-//            mainId = (clashCounter?.getStat() ?: cache?.addClash(mainId, clash)) as Long
-//            println("Nums of clashes - ${mainId + 1}")
-//        } catch (e: NumberFormatException) {
-//            logger.info("Error when adding clash - $e")
-//            throw ResponseStatusException(
-//                HttpStatus.UNPROCESSABLE_ENTITY, "Bad input", e
-//            )
-//        }
     }
 
     fun addClash(
@@ -97,5 +79,9 @@ class InelasticClashService {
                 HttpStatus.UNPROCESSABLE_ENTITY, "Bad input", e
             )
         }
+    }
+
+    init {
+        cache?.initId()
     }
 }

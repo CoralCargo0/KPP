@@ -1,7 +1,7 @@
 package com.example.KPP.models;
 
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.repository.CrudRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 
-interface ClashJPARepository : CrudRepository<DBentity, Int> {
+interface ClashJPARepository : MongoRepository<DBEntity, Int> {
+    fun findById(id: Long): DBEntity
 }

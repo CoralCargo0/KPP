@@ -1,10 +1,11 @@
 package com.example.KPP.cache
 
 import com.example.KPP.models.ClashJPARepository
-import com.example.KPP.models.DBentity
+import com.example.KPP.models.DBEntity
 import com.example.KPP.models.InelasticClashOfTwo
 import com.example.KPP.models.calculateSpeedAfterClash
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 
 
@@ -17,11 +18,11 @@ class ClashCache {
     private val cache = HashMap<Long, Pair<InelasticClashOfTwo, Double>>()
     var id: Long = 0L
 
-    fun isContain(key: Long): Boolean {
-        return cache.containsKey(key)
+    fun initId(){
+        id = repo?.findAll(Sort.by(Sort.Direction.ASC, "id"))?.last()?.id ?: 0L
     }
-
     fun addClash(result: InelasticClashOfTwo): Long {
+        id = repo?.count() ?: 0L
         var idOfExisting: Long = id
         cache.forEach { (k, v) ->
 
@@ -35,11 +36,13 @@ class ClashCache {
         }
         if (idOfExisting == id) {
             repo?.save(
-                DBentity(
+                DBEntity(
+                    id = idOfExisting,
                     weightOfFirst = result.weightOfFirst,
                     weightOfSecond = result.weightOfSecond,
                     speedOfSecond = result.speedOfSecond,
-                    speedOfFirst = result.speedOfFirst
+                    speedOfFirst = result.speedOfFirst,
+                    result = result.calculateSpeedAfterClash()
                 )
             )
             cache[id] = Pair(result, result.calculateSpeedAfterClash())
@@ -55,8 +58,4 @@ class ClashCache {
         } else
             null
     }
-
-//    fun getAllClashes(): HashMap<Long, InelasticClashOfTwo> {
-//        return cache
-//    }
 }
