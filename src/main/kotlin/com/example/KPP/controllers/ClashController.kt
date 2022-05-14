@@ -7,6 +7,7 @@ import com.example.KPP.dto.BulkDto
 import com.example.KPP.dto.InelasticClashOfTwoPostDto
 import com.example.KPP.dto.ResultDto
 import com.example.KPP.dto.config
+import com.example.KPP.models.DBEntity
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,6 +56,49 @@ class ClashController {
         return result
     }
 
+
+    @GetMapping("/get")
+    fun getById(
+        @RequestParam(value = "id") id: String
+    ): DBEntity {
+
+        return service?.getById(
+            id.toLong()
+        ) ?: throw ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR, "Try a bit later < 10 sec"
+        )
+
+    }
+
+    @GetMapping("/calculate/async")
+    fun calculateAsync(
+        @RequestParam(value = Constants.WEIGHT_OF_FIRST, defaultValue = "0.0") weightOfFirst: String,
+        @RequestParam(value = Constants.SPEED_OF_FIRST, defaultValue = "0.0") speedOfFirst: String,
+        @RequestParam(value = Constants.WEIGHT_OF_SECOND, defaultValue = "0.0") weightOfSecond: String,
+        @RequestParam(value = Constants.SPEED_OF_SECOND, defaultValue = "0.0") speedOfSecond: String
+    ): Long {
+        clashCounter?.increment()
+        logger.info(
+            "GET /calculate/async request params:${Constants.WEIGHT_OF_FIRST} - $weightOfFirst, " +
+                    "${Constants.SPEED_OF_FIRST} - $speedOfFirst, " +
+                    "${Constants.WEIGHT_OF_SECOND} - $weightOfSecond, " +
+                    "${Constants.SPEED_OF_SECOND} - $speedOfSecond"
+        )
+
+
+        logger.info(
+            "GET /calculate/async - amount of handled requests - ${clashCounter?.getStat()}, now handling - ${clashCounter?.getCurrent()}"
+        )
+        clashCounter?.decrement()
+        return service?.async(
+            weightOfFirst,
+            speedOfFirst,
+            weightOfSecond,
+            speedOfSecond
+        ) ?: throw ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR
+        )
+    }
 
     @PostMapping("/bulk/calculate")
     fun bulkCalculate(@RequestBody clashes: List<InelasticClashOfTwoPostDto>): BulkDto {

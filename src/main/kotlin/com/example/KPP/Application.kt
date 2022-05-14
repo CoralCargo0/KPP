@@ -4,7 +4,9 @@ import com.example.KPP.models.ClashJPARepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 
 @SpringBootApplication
 class Application : CommandLineRunner {
@@ -13,7 +15,7 @@ class Application : CommandLineRunner {
 
 	@Throws(Exception::class)
 	override fun run(vararg args: String) {
-		//repository?.deleteAll()
+		repository?.deleteAll()
 	}
 
 	companion object {

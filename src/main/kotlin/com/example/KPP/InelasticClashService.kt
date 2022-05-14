@@ -2,7 +2,12 @@ package com.example.KPP
 
 import com.example.KPP.cache.ClashCache
 import com.example.KPP.dto.ResultDto
+import com.example.KPP.models.DBEntity
 import com.example.KPP.models.InelasticClashOfTwo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,6 +69,37 @@ class InelasticClashService {
         }
     }
 
+
+    fun async(
+        weightOfFirst: String,
+        speedOfFirst: String,
+        weightOfSecond: String,
+        speedOfSecond: String
+    ): Long {
+
+        var locakId: Long = cache?.getNewId() ?: 99
+        CoroutineScope(Dispatchers.Default).launch {
+            delay(10000)
+            try {
+                val clash = InelasticClashOfTwo(
+                    weightOfFirst = weightOfFirst.toDouble(),
+                    speedOfFirst = speedOfFirst.toDouble(),
+                    weightOfSecond = weightOfSecond.toDouble(),
+                    speedOfSecond = speedOfSecond.toDouble()
+                )
+                cache?.async(clash, locakId)
+            } catch (e: NumberFormatException) {
+                logger.error("Error when adding clash - $e")
+                throw ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "Bad input", e
+                )
+            }
+
+        }
+        return locakId
+    }
+
+
     fun addClash(
         clashOfTwo: InelasticClashOfTwo
     ): ResultDto {
@@ -79,6 +115,10 @@ class InelasticClashService {
                 HttpStatus.UNPROCESSABLE_ENTITY, "Bad input", e
             )
         }
+    }
+
+    fun getById(id: Long): DBEntity? {
+        return cache?.getById(id)
     }
 
     init {
